@@ -762,26 +762,27 @@
 <script>
 // ===================== DATA STORE =====================
 let teamMembers = [
-  { id: 'you', name: 'You (Admin)', role: 'Lead', initials: 'YO' },
-  { id: 'alice', name: 'Alice Chen', role: 'Security Analyst', initials: 'AC' },
-  { id: 'bob', name: 'Bob Smith', role: 'SOC Analyst', initials: 'BS' },
-  { id: 'carol', name: 'Carol White', role: 'Incident Handler', initials: 'CW' },
-  { id: 'dave', name: 'Dave Kumar', role: 'Forensics', initials: 'DK' }
+  { id: 'mehedi', name: 'Mehedi Hasan Asif', role: 'Head Of Department', initials: 'MH', canAssign: true },
+  { id: 'siam', name: 'Md. Saidul Islam Siam', role: 'Lead', initials: 'SI', canAssign: true },
+  { id: 'parves', name: 'Parves Mosharof', role: 'Lead', initials: 'PM', canAssign: true },
+  { id: 'fuad', name: 'Fuad Hasan', role: 'Subordinate', initials: 'FH', canAssign: false },
+  { id: 'abid', name: 'Md. Al Abid', role: 'Subordinate', initials: 'AA', canAssign: false },
+  { id: 'juman', name: 'Juman Nakrak', role: 'Subordinate', initials: 'JN', canAssign: false }
 ];
 
 let incidents = [
-  { id: 1, subject: 'URGENT: Suspicious login from IP 192.168.1.45', assignee: 'alice', created: '2026-07-10T09:30:00', solved: '2026-07-10T14:20:00', status: 'solved' },
-  { id: 2, subject: 'Phishing attempt detected in finance@company.com', assignee: 'bob', created: '2026-07-11T08:15:00', solved: null, status: 'open' },
-  { id: 3, subject: 'Malware alert: Trojan.Win32.Generic detected', assignee: 'you', created: '2026-07-11T11:45:00', solved: '2026-07-11T16:30:00', status: 'solved' },
-  { id: 4, subject: 'DDoS attack on API gateway - 50k req/s', assignee: 'carol', created: '2026-07-12T02:00:00', solved: null, status: 'open' },
-  { id: 5, subject: 'Data exfiltration attempt via DNS tunneling', assignee: 'dave', created: '2026-07-12T14:20:00', solved: '2026-07-13T09:10:00', status: 'solved' },
-  { id: 6, subject: 'Ransomware indicators on workstation WS-4421', assignee: 'you', created: '2026-07-13T07:00:00', solved: null, status: 'open' },
-  { id: 7, subject: 'Unauthorized AWS S3 bucket policy change', assignee: 'alice', created: '2026-07-13T10:30:00', solved: null, status: 'open' },
-  { id: 8, subject: 'CVE-2026-1234 exploit attempt on web server', assignee: 'bob', created: '2026-07-13T13:15:00', solved: '2026-07-13T15:45:00', status: 'solved' },
-  { id: 9, subject: 'Insider threat: unusual file access pattern', assignee: 'carol', created: '2026-07-13T16:00:00', solved: null, status: 'open' },
-  { id: 10, subject: 'SSL certificate expiry warning - prod.api.com', assignee: 'dave', created: '2026-07-13T18:30:00', solved: null, status: 'open' },
-  { id: 11, subject: 'Brute force attack on VPN portal', assignee: 'you', created: '2026-07-13T20:00:00', solved: '2026-07-13T22:15:00', status: 'solved' },
-  { id: 12, subject: 'SIEM alert: Privilege escalation on DC01', assignee: 'alice', created: '2026-07-13T21:45:00', solved: null, status: 'open' }
+  { id: 1, subject: 'URGENT: Suspicious login from IP 192.168.1.45', assignee: 'siam', created: '2026-07-10T09:30:00', solved: '2026-07-10T14:20:00', status: 'solved' },
+  { id: 2, subject: 'Phishing attempt detected in finance@company.com', assignee: 'fuad', created: '2026-07-11T08:15:00', solved: null, status: 'open' },
+  { id: 3, subject: 'Malware alert: Trojan.Win32.Generic detected', assignee: 'mehedi', created: '2026-07-11T11:45:00', solved: '2026-07-11T16:30:00', status: 'solved' },
+  { id: 4, subject: 'DDoS attack on API gateway - 50k req/s', assignee: 'abid', created: '2026-07-12T02:00:00', solved: null, status: 'open' },
+  { id: 5, subject: 'Data exfiltration attempt via DNS tunneling', assignee: 'juman', created: '2026-07-12T14:20:00', solved: '2026-07-13T09:10:00', status: 'solved' },
+  { id: 6, subject: 'Ransomware indicators on workstation WS-4421', assignee: 'parves', created: '2026-07-13T07:00:00', solved: null, status: 'open' },
+  { id: 7, subject: 'Unauthorized AWS S3 bucket policy change', assignee: 'fuad', created: '2026-07-13T10:30:00', solved: null, status: 'open' },
+  { id: 8, subject: 'CVE-2026-1234 exploit attempt on web server', assignee: 'abid', created: '2026-07-13T13:15:00', solved: '2026-07-13T15:45:00', status: 'solved' },
+  { id: 9, subject: 'Insider threat: unusual file access pattern', assignee: 'juman', created: '2026-07-13T16:00:00', solved: null, status: 'open' },
+  { id: 10, subject: 'SSL certificate expiry warning - prod.api.com', assignee: 'fuad', created: '2026-07-13T18:30:00', solved: null, status: 'open' },
+  { id: 11, subject: 'Brute force attack on VPN portal', assignee: 'siam', created: '2026-07-13T20:00:00', solved: '2026-07-13T22:15:00', status: 'solved' },
+  { id: 12, subject: 'SIEM alert: Privilege escalation on DC01', assignee: 'mehedi', created: '2026-07-13T21:45:00', solved: null, status: 'open' }
 ];
 
 let selectedIds = new Set();
