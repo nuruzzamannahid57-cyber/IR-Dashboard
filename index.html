@@ -23,6 +23,32 @@
     --bee-dark: #3a3a3a;
     --bee-yellow: #ffc800;
     --bee-yellow-light: #ffd633;
+    --toggle-bg: #373737;
+    --toggle-left-bg: #f3f3f3;
+    --toggle-right-text: rgb(206, 206, 206);
+    --toggle-checked-color: #487bdb;
+  }
+
+  [data-theme="light"] {
+    --bg-primary: #f1f5f9;
+    --bg-secondary: #ffffff;
+    --bg-card: #e2e8f0;
+    --accent: #d97706;
+    --accent-hover: #b45309;
+    --accent-glow: rgba(217, 119, 6, 0.1);
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --border: #cbd5e1;
+    --bee-dark: #3a3a3a;
+    --bee-yellow: #d97706;
+    --bee-yellow-light: #f59e0b;
+    --toggle-bg: #e2e8f0;
+    --toggle-left-bg: #ffffff;
+    --toggle-right-text: #94a3b8;
+    --toggle-checked-color: #2563eb;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -641,6 +667,139 @@
     color: var(--accent);
     font-weight: 500;
   }
+
+  /* 3D Light/Dark Toggle Switch */
+  .switch {
+    font-size: 7px;
+    position: relative;
+    display: inline-block;
+    width: 4.5em;
+    height: 2.2em;
+    user-select: none;
+  }
+
+  .switch .cb {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .toggle {
+    position: absolute;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    background-color: var(--toggle-bg);
+    border-radius: 0.1em;
+    transition: 0.4s;
+    text-transform: uppercase;
+    font-weight: 700;
+    overflow: hidden;
+    box-shadow: -0.3em 0 0 0 var(--toggle-bg), -0.3em 0.3em 0 0 var(--toggle-bg),
+      0.3em 0 0 0 var(--toggle-bg), 0.3em 0.3em 0 0 var(--toggle-bg), 0 0.3em 0 0 var(--toggle-bg);
+  }
+
+  .toggle > .left {
+    position: absolute;
+    display: flex;
+    width: 50%;
+    height: 88%;
+    background-color: var(--toggle-left-bg);
+    color: var(--toggle-bg);
+    left: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    transform-origin: right;
+    transform: rotateX(10deg);
+    transform-style: preserve-3d;
+    transition: all 150ms;
+    font-size: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  .left::before {
+    position: absolute;
+    content: "";
+    width: 100%;
+    height: 100%;
+    background-color: rgb(206, 206, 206);
+    transform-origin: center left;
+    transform: rotateY(90deg);
+  }
+
+  .left::after {
+    position: absolute;
+    content: "";
+    width: 100%;
+    height: 100%;
+    background-color: rgb(112, 112, 112);
+    transform-origin: center bottom;
+    transform: rotateX(90deg);
+  }
+
+  .toggle > .right {
+    position: absolute;
+    display: flex;
+    width: 50%;
+    height: 88%;
+    background-color: var(--toggle-left-bg);
+    color: var(--toggle-right-text);
+    right: 1px;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    transform-origin: left;
+    transform: rotateX(10deg) rotateY(-45deg);
+    transform-style: preserve-3d;
+    transition: all 150ms;
+    font-size: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  .right::before {
+    position: absolute;
+    content: "";
+    width: 100%;
+    height: 100%;
+    background-color: rgb(206, 206, 206);
+    transform-origin: center right;
+    transform: rotateY(-90deg);
+  }
+
+  .right::after {
+    position: absolute;
+    content: "";
+    width: 100%;
+    height: 100%;
+    background-color: rgb(112, 112, 112);
+    transform-origin: center bottom;
+    transform: rotateX(90deg);
+  }
+
+  .switch input:checked + .toggle > .left {
+    transform: rotateX(10deg) rotateY(45deg);
+    color: var(--toggle-right-text);
+  }
+
+  .switch input:checked + .toggle > .right {
+    transform: rotateX(10deg) rotateY(0deg);
+    color: var(--toggle-checked-color);
+  }
+
+  .theme-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .theme-label {
+    font-size: 8px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-weight: 500;
+  }
 </style>
 <base target="_blank">
 </head>
@@ -655,9 +814,22 @@
         <div style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">Incident Response Command Center</div>
       </div>
     </div>
-    <button class="btn btn-primary" onclick="openAddModal()">
-      <span>+</span> Add Incident
-    </button>
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <div class="theme-toggle-wrapper">
+        <span class="theme-label">Light</span>
+        <label class="switch">
+          <input type="checkbox" class="cb" id="themeToggle" onchange="toggleTheme()">
+          <span class="toggle">
+            <span class="left">on</span>
+            <span class="right">off</span>
+          </span>
+        </label>
+        <span class="theme-label">Dark</span>
+      </div>
+      <button class="btn btn-primary" onclick="openAddModal()">
+        <span>+</span> Add Incident
+      </button>
+    </div>
   </div>
 
   <div class="stats-grid">
@@ -790,8 +962,35 @@ let currentSort = { field: 'created', dir: 'desc' };
 let currentPage = 1;
 const perPage = 8;
 
+// ===================== THEME TOGGLE =====================
+function toggleTheme() {
+  const checkbox = document.getElementById('themeToggle');
+  const body = document.body;
+  if (checkbox.checked) {
+    body.removeAttribute('data-theme');
+    localStorage.setItem('theme', 'dark');
+  } else {
+    body.setAttribute('data-theme', 'light');
+    localStorage.setItem('theme', 'light');
+  }
+}
+
+function loadTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  const checkbox = document.getElementById('themeToggle');
+  if (savedTheme === 'dark') {
+    document.body.removeAttribute('data-theme');
+    if (checkbox) checkbox.checked = true;
+  } else {
+    // Default: Light mode
+    document.body.setAttribute('data-theme', 'light');
+    if (checkbox) checkbox.checked = false;
+  }
+}
+
 // ===================== INIT =====================
 function init() {
+  loadTheme();
   populateAssigneeFilters();
   renderTeamStats();
   renderTable();
