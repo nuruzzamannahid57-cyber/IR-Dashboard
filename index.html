@@ -73,6 +73,20 @@
     margin-bottom: 32px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border);
+    flex-wrap: nowrap;
+    gap: 16px;
+  }
+
+  .dashboard-header > div:first-child {
+    flex-shrink: 0;
+  }
+
+  .dashboard-header .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    margin-left: auto;
   }
 
   .dashboard-title {
