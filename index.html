@@ -1128,8 +1128,12 @@ let incidents = [
 
 function isCurrentUserAdmin() {
   if (!currentUser) return false;
-  const member = teamMembers.find(m => m.email === currentUser.email);
-  return member ? member.isAdmin : false;
+  const adminEmails = [
+    'mehedi.asif@carrybee.com',
+    'md.saidul@carrybee.com',
+    'parves.mosharof@carrybee.com'
+  ];
+  return adminEmails.includes(currentUser.email);
 }
 
 let selectedIds = new Set();
@@ -1180,14 +1184,7 @@ function handleCredentialResponse(response) {
     return;
   }
 
-  // Check if user is in approved team list
-  const isTeamMember = teamMembers.some(m => m.email === email);
-  if (!isTeamMember) {
-    showAuthError('Access denied. You are not in the authorized team list.');
-    google.accounts.id.revoke(email, () => {});
-    return;
-  }
-
+  // Any @carrybee.com email can access
   currentUser = {
     name: payload.name,
     email: email,
@@ -1226,7 +1223,7 @@ function showDashboard() {
       adminBadge.style.display = 'none';
     }
 
-    // Re-render table to show/hide delete buttons based on admin status
+    // Re-render table to show/hide admin controls
     renderTable();
   }
 }
@@ -1373,9 +1370,10 @@ function renderTable() {
           </td>
           <td><div class="mail-subject" title="${inc.subject}">${inc.subject}</div></td>
           <td>
-            <select class="assignee-select" onchange="reassign(${inc.id}, this.value)">
-              ${teamMembers.map(m => `<option value="${m.id}" ${m.id === inc.assignee ? 'selected' : ''}>${m.name}</option>`).join('')}
-            </select>
+            ${isCurrentUserAdmin() 
+              ? `<select class="assignee-select" onchange="reassign(${inc.id}, this.value)">${teamMembers.map(m => `<option value="${m.id}" ${m.id === inc.assignee ? 'selected' : ''}>${m.name}</option>`).join('')}</select>`
+              : `<span style="color: var(--text-secondary); font-size: 13px;">${teamMembers.find(m => m.id === inc.assignee)?.name || inc.assignee}</span>`
+            }
           </td>
           <td class="date-cell">${created}</td>
           <td class="date-cell ${inc.solved ? 'solved' : ''}">${solved}</td>
@@ -1464,6 +1462,11 @@ function deleteIncident(id) {
 }
 
 function reassign(id, newAssignee) {
+  if (!isCurrentUserAdmin()) {
+    showToast('info', 'Access Denied', 'Only admins can reassign incidents.');
+    renderTable();
+    return;
+  }
   const inc = incidents.find(i => i.id === id);
   if (inc) {
     inc.assignee = newAssignee;
