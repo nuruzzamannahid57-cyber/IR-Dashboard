@@ -1056,6 +1056,11 @@
     50% { opacity: 0.5; }
   }
 
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+  }
+
   .cloud-loader {
     width: 250px;
     height: 250px;
@@ -1326,6 +1331,7 @@
   }
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@libsql/client@0.5.0/web.js"></script>
 <base target="_blank">
 </head>
 <body>
@@ -1387,6 +1393,11 @@
         <div style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">Incident Response Command Center</div>
       </div>
     </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="font-size: 12px; color: var(--text-secondary);">
+        Last updated: <span id="lastUpdated" style="color: var(--accent); font-weight: 500;">--</span>
+        <span id="liveIndicator" style="display: inline-block; width: 6px; height: 6px; background: var(--success); border-radius: 50%; margin-left: 6px; animation: pulse-dot 2s infinite;"></span>
+      </div>
     <div class="header-right">
       <div class="theme-toggle-wrapper">
         <span class="theme-label">Light</span>
@@ -1484,6 +1495,7 @@
             </div>
           </th>
           <th onclick="sortBy('subject')">Mail Subject <span class="sort-indicator" id="sort-subject">&#8597;</span></th>
+          <th onclick="sortBy('kamName')">KAM Name <span class="sort-indicator" id="sort-kamName">&#8597;</span></th>
           <th onclick="sortBy('assignee')">Assignee <span class="sort-indicator" id="sort-assignee">&#8597;</span></th>
           <th onclick="sortBy('created')">Created <span class="sort-indicator" id="sort-created">&#8597;</span></th>
           <th onclick="sortBy('solved')">Solved <span class="sort-indicator" id="sort-solved">&#8597;</span></th>
@@ -1560,18 +1572,18 @@ let teamMembers = [
 ];
 
 let incidents = [
-  { id: 1, subject: 'URGENT: Suspicious login from IP 192.168.1.45', assignee: 'siam', created: '2026-07-10T09:30:00', solved: '2026-07-10T14:20:00', status: 'solved' },
-  { id: 2, subject: 'Phishing attempt detected in finance@company.com', assignee: 'fuad', created: '2026-07-11T08:15:00', solved: null, status: 'open' },
-  { id: 3, subject: 'Malware alert: Trojan.Win32.Generic detected', assignee: 'mehedi', created: '2026-07-11T11:45:00', solved: '2026-07-11T16:30:00', status: 'solved' },
-  { id: 4, subject: 'DDoS attack on API gateway - 50k req/s', assignee: 'abid', created: '2026-07-12T02:00:00', solved: null, status: 'in-progress' },
-  { id: 5, subject: 'Data exfiltration attempt via DNS tunneling', assignee: 'juman', created: '2026-07-12T14:20:00', solved: '2026-07-13T09:10:00', status: 'solved' },
-  { id: 6, subject: 'Ransomware indicators on workstation WS-4421', assignee: 'parves', created: '2026-07-13T07:00:00', solved: null, status: 'in-progress' },
-  { id: 7, subject: 'Unauthorized AWS S3 bucket policy change', assignee: 'fuad', created: '2026-07-13T10:30:00', solved: null, status: 'open' },
-  { id: 8, subject: 'CVE-2026-1234 exploit attempt on web server', assignee: 'abid', created: '2026-07-13T13:15:00', solved: '2026-07-13T15:45:00', status: 'solved' },
-  { id: 9, subject: 'Insider threat: unusual file access pattern', assignee: 'juman', created: '2026-07-13T16:00:00', solved: null, status: 'in-progress' },
-  { id: 10, subject: 'SSL certificate expiry warning - prod.api.com', assignee: 'fuad', created: '2026-07-13T18:30:00', solved: null, status: 'open' },
-  { id: 11, subject: 'Brute force attack on VPN portal', assignee: 'siam', created: '2026-07-13T20:00:00', solved: '2026-07-13T22:15:00', status: 'solved' },
-  { id: 12, subject: 'SIEM alert: Privilege escalation on DC01', assignee: 'mehedi', created: '2026-07-13T21:45:00', solved: null, status: 'in-progress' }
+  { id: 1, subject: 'URGENT: Suspicious login from IP 192.168.1.45', assignee: 'mehedi', kamName: 'Nuruzzaman Nahid', created: '2026-07-10T09:30:00', solved: '2026-07-10T14:20:00', status: 'solved' },
+  { id: 2, subject: 'Phishing attempt detected in finance@company.com', assignee: 'fuad', kamName: 'Nuruzzaman Nahid', created: '2026-07-11T08:15:00', solved: null, status: 'open' },
+  { id: 3, subject: 'Malware alert: Trojan.Win32.Generic detected', assignee: 'mehedi', kamName: 'Nuruzzaman Nahid', created: '2026-07-11T11:45:00', solved: '2026-07-11T16:30:00', status: 'solved' },
+  { id: 4, subject: 'DDoS attack on API gateway - 50k req/s', assignee: 'abid', kamName: 'Nuruzzaman Nahid', created: '2026-07-12T02:00:00', solved: null, status: 'in-progress' },
+  { id: 5, subject: 'Data exfiltration attempt via DNS tunneling', assignee: 'juman', kamName: 'Nuruzzaman Nahid', created: '2026-07-12T14:20:00', solved: '2026-07-13T09:10:00', status: 'solved' },
+  { id: 6, subject: 'Ransomware indicators on workstation WS-4421', assignee: 'parves', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T07:00:00', solved: null, status: 'in-progress' },
+  { id: 7, subject: 'Unauthorized AWS S3 bucket policy change', assignee: 'fuad', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T10:30:00', solved: null, status: 'open' },
+  { id: 8, subject: 'CVE-2026-1234 exploit attempt on web server', assignee: 'abid', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T13:15:00', solved: '2026-07-13T15:45:00', status: 'solved' },
+  { id: 9, subject: 'Insider threat: unusual file access pattern', assignee: 'juman', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T16:00:00', solved: null, status: 'in-progress' },
+  { id: 10, subject: 'SSL certificate expiry warning - prod.api.com', assignee: 'fuad', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T18:30:00', solved: null, status: 'open' },
+  { id: 11, subject: 'Brute force attack on VPN portal', assignee: 'siam', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T20:00:00', solved: '2026-07-13T22:15:00', status: 'solved' },
+  { id: 12, subject: 'SIEM alert: Privilege escalation on DC01', assignee: 'mehedi', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T21:45:00', solved: null, status: 'in-progress' }
 ];
 
 function isCurrentUserAdmin() {
@@ -1582,6 +1594,93 @@ function isCurrentUserAdmin() {
     'parves.mosharof@carrybee.com'
   ];
   return adminEmails.includes(currentUser.email);
+}
+
+// ===================== TURSO DATABASE =====================
+const TURSO_URL = 'libsql://ir-issue-nuruzzaman.aws-ap-south-1.turso.io';
+const TURSO_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODM5NzU5NDQsImlkIjoiMDE5ZjVkM2YtZmQwMS03MWJjLTg3NmEtMDljYjYzMjU2OTA3Iiwia2lkIjoiOExPbnVlZ2FMWlp6QkpYRl9FakY0T1JvMk5rZUlpZ3M3TFptenFhMnBRRSIsInJpZCI6ImQ1ODUxODBkLWQ4MWYtNDdkMy05YzE1LTg4ZmQzNGZjODAzOSJ9.TCdBTnBepck1_eyNP9vIVMiwTEEEkeBbajoz5Rm-0Ft-Zh69XKbNT4ZsQKyNq1HdWmg5cMHmWigkLTQlJGTVDA';
+
+let tursoClient = null;
+
+async function initTurso() {
+  try {
+    tursoClient = await libsql.createClient({
+      url: TURSO_URL,
+      authToken: TURSO_TOKEN
+    });
+    console.log('Turso connected');
+    return true;
+  } catch (err) {
+    console.error('Turso connection failed:', err);
+    return false;
+  }
+}
+
+async function fetchIncidentsFromDB() {
+  if (!tursoClient) {
+    const connected = await initTurso();
+    if (!connected) return false;
+  }
+
+  try {
+    const result = await tursoClient.execute('SELECT * FROM incidents ORDER BY created_at DESC');
+
+    if (result.rows && result.rows.length > 0) {
+      incidents = result.rows.map((row, idx) => ({
+        id: row.id || idx + 1,
+        subject: row.subject_line || row.subject || 'No Subject',
+        kamName: row.kam_name || row.kamName || 'Unknown',
+        assignee: mapKamToAssignee(row.assignee),
+        created: row.created_at || row.created,
+        solved: row.solved_at || row.solved || null,
+        status: row.status || 'open'
+      }));
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.error('Fetch failed:', err);
+    return false;
+  }
+}
+
+// Map KAM names from form to dashboard assignee IDs
+function mapKamToAssignee(kamName) {
+  const mapping = {
+    'Md. Saidul Islam Siam': 'siam',
+    'Parves Mosharof': 'parves',
+    'Fuad Hasan': 'fuad',
+    'Md. Al Abid': 'abid',
+    'Juman Nakrak': 'juman'
+  };
+
+  // Try exact match first
+  if (mapping[kamName]) return mapping[kamName];
+
+  // Try partial match
+  for (const [name, id] of Object.entries(mapping)) {
+    if (kamName && (kamName.includes(name.split(' ')[0]) || kamName.includes(name.split(' ').pop()))) {
+      return id;
+    }
+  }
+
+  return 'mehedi'; // default
+}
+
+// Refresh button handler
+async function refreshData() {
+  showToast('info', 'Refreshing', 'Fetching latest data from Turso...');
+  const success = await fetchIncidentsFromDB();
+  if (success) {
+    renderTable();
+    renderTeamStats();
+    updateStats();
+    const now = new Date();
+    document.getElementById('lastUpdated').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    showToast('success', 'Updated', 'Dashboard refreshed with latest data.');
+  } else {
+    showToast('info', 'Offline Mode', 'Using local data. Database connection failed.');
+  }
 }
 
 let selectedIds = new Set();
@@ -1674,9 +1773,17 @@ function showDashboard() {
   document.getElementById('loaderOverlay').classList.add('active');
 
   // Simulate loading delay then show dashboard
-  setTimeout(() => {
+  setTimeout(async () => {
     document.getElementById('loaderOverlay').classList.remove('active');
     document.getElementById('irDashboard').style.display = 'block';
+
+    // Fetch from Turso on login
+    await fetchIncidentsFromDB();
+    renderTable();
+    renderTeamStats();
+    updateStats();
+    const now2 = new Date();
+    document.getElementById('lastUpdated').textContent = now2.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     if (currentUser) {
       document.getElementById('userProfile').style.display = 'flex';
@@ -1722,12 +1829,21 @@ function checkExistingAuth() {
 }
 
 // ===================== INIT =====================
-function init() {
+async function init() {
   loadTheme();
   if (!checkExistingAuth()) {
     document.getElementById('authOverlay').classList.remove('hidden');
     document.getElementById('irDashboard').style.display = 'none';
+    return;
   }
+
+  // Try to fetch from Turso
+  await fetchIncidentsFromDB();
+  renderTable();
+  renderTeamStats();
+  updateStats();
+  const now = new Date();
+  document.getElementById('lastUpdated').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   populateAssigneeFilters();
   renderTeamStats();
   renderTable();
@@ -1820,7 +1936,7 @@ function renderTable() {
   const tbody = document.getElementById('incidentsTable');
   if (pageItems.length === 0) {
     tbody.innerHTML = `
-      <tr><td colspan="7">
+      <tr><td colspan="8">
         <div class="empty-state">
           <div class="empty-state-icon" style="color: var(--accent);">&#9670;</div>
           <div>No incidents found matching your filters.</div>
@@ -1842,6 +1958,11 @@ function renderTable() {
             </div>
           </td>
           <td><div class="mail-subject" title="${inc.subject}">${inc.subject}</div></td>
+          <td>
+            <div style="font-size: 13px; color: var(--text-secondary);">
+              ${inc.kamName || '-'}
+            </div>
+          </td>
           <td>
             ${isCurrentUserAdmin() 
               ? `<select class="assignee-select" onchange="reassign(${inc.id}, this.value)">${teamMembers.map(m => `<option value="${m.id}" ${m.id === inc.assignee ? 'selected' : ''}>${m.name}</option>`).join('')}</select>`
@@ -1993,6 +2114,7 @@ function addIncident() {
   incidents.unshift({
     id: newId,
     subject: subject,
+    kamName: currentUser ? currentUser.name : 'Unknown',
     assignee: assignee,
     created: created || new Date().toISOString(),
     solved: null,
