@@ -1331,7 +1331,6 @@
   }
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@libsql/client@0.5.0/web.js"></script>
 <base target="_blank">
 </head>
 <body>
@@ -1611,46 +1610,55 @@ function isCurrentUserAdmin() {
   return adminEmails.includes(currentUser.email);
 }
 
-// ===================== TURSO DATABASE =====================
-const TURSO_URL = 'libsql://ir-issue-nuruzzaman.aws-ap-south-1.turso.io';
-const TURSO_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODM5NzU5NDQsImlkIjoiMDE5ZjVkM2YtZmQwMS03MWJjLTg3NmEtMDljYjYzMjU2OTA3Iiwia2lkIjoiOExPbnVlZ2FMWlp6QkpYRl9FakY0T1JvMk5rZUlpZ3M3TFptenFhMnBRRSIsInJpZCI6ImQ1ODUxODBkLWQ4MWYtNDdkMy05YzE1LTg4ZmQzNGZjODAzOSJ9.TCdBTnBepck1_eyNP9vIVMiwTEEEkeBbajoz5Rm-0Ft-Zh69XKbNT4ZsQKyNq1HdWmg5cMHmWigkLTQlJGTVDA';
-
-let tursoClient = null;
-
-async function initTurso() {
-  try {
-    tursoClient = await libsql.createClient({
-      url: TURSO_URL,
-      authToken: TURSO_TOKEN
-    });
-    console.log('Turso connected');
-    return true;
-  } catch (err) {
-    console.error('Turso connection failed:', err);
-    return false;
-  }
-}
+// ===================== TURSO DATABASE (REST API) =====================
+const TURSO_DB_URL = 'https://ir-issue-nuruzzaman.aws-ap-south-1.turso.io';
+const TURSO_AUTH_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODM5NzU5NDQsImlkIjoiMDE5ZjVkM2YtZmQwMS03MWJjLTg3NmEtMDljYjYzMjU2OTA3Iiwia2lkIjoiOExPbnVlZ2FMWlp6QkpYRl9FakY0T1JvMk5rZUlpZ3M3TFptenFhMnBRRSIsInJpZCI6ImQ1ODUxODBkLWQ4MWYtNDdkMy05YzE1LTg4ZmQzNGZjODAzOSJ9.TCdBTnBepck1_eyNP9vIVMiwTEEEkeBbajoz5Rm-0Ft-Zh69XKbNT4ZsQKyNq1HdWmg5cMHmWigkLTQlJGTVDA';
 
 async function fetchIncidentsFromDB() {
-  if (!tursoClient) {
-    const connected = await initTurso();
-    if (!connected) return false;
-  }
-
   try {
-    const result = await tursoClient.execute('SELECT * FROM incidents ORDER BY created_at DESC');
+    const response = await fetch(`${TURSO_DB_URL}/v2/pipeline`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${TURSO_AUTH_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        requests: [
+          { type: 'execute', stmt: { sql: 'SELECT * FROM incidents ORDER BY created_at DESC' } }
+        ]
+      })
+    });
 
-    if (result.rows && result.rows.length > 0) {
-      incidents = result.rows.map((row, idx) => ({
-        id: row.id || idx + 1,
-        subject: row.subject_line || row.subject || 'No Subject',
-        kamName: row.kam_name || row.kamName || 'Unknown',
-        assignee: mapKamToAssignee(row.assignee),
-        created: row.created_at || row.created,
-        solved: row.solved_at || row.solved || null,
-        status: row.status || 'open'
-      }));
-      return true;
+    if (!response.ok) {
+      console.error('Turso API error:', response.status);
+      return false;
+    }
+
+    const data = await response.json();
+
+    if (data.results && data.results[0] && data.results[0].response && data.results[0].response.result && data.results[0].response.result.rows) {
+      const rows = data.results[0].response.result.rows;
+
+      if (rows.length > 0) {
+        incidents = rows.map((row, idx) => {
+          // Turso returns rows as arrays of values with types
+          const getValue = (colIdx) => {
+            if (!row[colIdx]) return null;
+            return row[colIdx].value !== undefined ? row[colIdx].value : row[colIdx];
+          };
+
+          return {
+            id: getValue(0) || idx + 1,
+            subject: getValue(1) || 'No Subject',
+            kamName: getValue(2) || 'Unknown',
+            assignee: mapKamToAssignee(getValue(3)),
+            created: getValue(4) || new Date().toISOString(),
+            solved: getValue(5) || null,
+            status: getValue(6) || 'open'
+          };
+        });
+        return true;
+      }
     }
     return false;
   } catch (err) {
