@@ -1370,7 +1370,8 @@
     <div id="g_id_onload"
          data-client_id="806093436112-0f3oh9hjs639ol4otp8mf0egg81qf6fc.apps.googleusercontent.com"
          data-callback="handleCredentialResponse"
-         data-auto_prompt="false">
+         data-auto_prompt="false"
+         data-itp_support="true">
     </div>
     <div class="g_id_signin"
          data-type="standard"
@@ -1561,6 +1562,20 @@
 </div>
 
 <script>
+// Global callback wrapper for Google Sign-In
+window.handleCredentialResponse = function(response) {
+  if (typeof _handleCredentialResponse === 'function') {
+    _handleCredentialResponse(response);
+  } else {
+    console.error('Auth handler not ready yet');
+    setTimeout(() => {
+      if (typeof _handleCredentialResponse === 'function') {
+        _handleCredentialResponse(response);
+      }
+    }, 500);
+  }
+};
+
 // ===================== DATA STORE =====================
 let teamMembers = [
   { id: 'mehedi', name: 'Mehedi Hasan Asif', role: 'Head Of Department', initials: 'MH', email: 'mehedi.asif@carrybee.com', isAdmin: true, canAssign: true },
@@ -1735,7 +1750,7 @@ function loadTheme() {
 const ALLOWED_DOMAIN = 'carrybee.com';
 let currentUser = null;
 
-function handleCredentialResponse(response) {
+function _handleCredentialResponse(response) {
   const credential = response.credential;
   const payload = JSON.parse(atob(credential.split('.')[1]));
 
@@ -1782,8 +1797,8 @@ function showDashboard() {
     renderTable();
     renderTeamStats();
     updateStats();
-    const now2 = new Date();
-    document.getElementById('lastUpdated').textContent = now2.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const nowTime2 = new Date();
+    document.getElementById('lastUpdated').textContent = nowTime2.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     if (currentUser) {
       document.getElementById('userProfile').style.display = 'flex';
@@ -1842,8 +1857,8 @@ async function init() {
   renderTable();
   renderTeamStats();
   updateStats();
-  const now = new Date();
-  document.getElementById('lastUpdated').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const nowTime = new Date();
+  document.getElementById('lastUpdated').textContent = nowTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   populateAssigneeFilters();
   renderTeamStats();
   renderTable();
