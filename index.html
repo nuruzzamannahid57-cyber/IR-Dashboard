@@ -1644,16 +1644,20 @@ async function fetchIncidentsFromDB() {
         incidents = rows.map((row, idx) => {
           // Turso returns rows as arrays of values with types
           const getValue = (colIdx) => {
-            if (!row[colIdx]) return null;
-            return row[colIdx].value !== undefined ? row[colIdx].value : row[colIdx];
+            if (row === undefined || row[colIdx] === undefined || row[colIdx] === null) return null;
+            // Turso v2 pipeline returns {type: '...', value: '...'} or just the value
+            if (typeof row[colIdx] === 'object' && row[colIdx] !== null && 'value' in row[colIdx]) {
+              return row[colIdx].value;
+            }
+            return row[colIdx];
           };
 
           const solvedAt = getValue(4);
           const assigneeName = getValue(2) || 'Unknown';
 
-          // Derive status from solved_at
+          // Derive status from solved_at (handle null, empty string, undefined)
           let status = 'open';
-          if (solvedAt) status = 'solved';
+          if (solvedAt && solvedAt !== '' && solvedAt !== 'null') status = 'solved';
 
           return {
             id: getValue(0) || idx + 1,
