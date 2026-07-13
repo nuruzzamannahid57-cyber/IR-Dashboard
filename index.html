@@ -1624,17 +1624,18 @@ async function fetchIncidentsFromDB() {
       },
       body: JSON.stringify({
         requests: [
-          { type: 'execute', stmt: { sql: 'SELECT * FROM incidents ORDER BY created_at DESC' } }
+          { type: 'execute', stmt: { sql: 'SELECT * FROM `IR Issues` ORDER BY created_at DESC' } }
         ]
       })
     });
 
     if (!response.ok) {
-      console.error('Turso API error:', response.status);
+      console.error('Turso API error:', response.status, await response.text());
       return false;
     }
 
     const data = await response.json();
+    console.log('Turso response:', data);
 
     if (data.results && data.results[0] && data.results[0].response && data.results[0].response.result && data.results[0].response.result.rows) {
       const rows = data.results[0].response.result.rows;
@@ -1647,14 +1648,21 @@ async function fetchIncidentsFromDB() {
             return row[colIdx].value !== undefined ? row[colIdx].value : row[colIdx];
           };
 
+          const solvedAt = getValue(4);
+          const assigneeName = getValue(2) || 'Unknown';
+
+          // Derive status from solved_at
+          let status = 'open';
+          if (solvedAt) status = 'solved';
+
           return {
             id: getValue(0) || idx + 1,
             subject: getValue(1) || 'No Subject',
-            kamName: getValue(2) || 'Unknown',
-            assignee: mapKamToAssignee(getValue(3)),
-            created: getValue(4) || new Date().toISOString(),
-            solved: getValue(5) || null,
-            status: getValue(6) || 'open'
+            kamName: assigneeName,  // assignee from KAM form = KAM name
+            assignee: mapKamToAssignee(assigneeName),  // map to IR team member
+            created: getValue(3) || new Date().toISOString(),
+            solved: solvedAt,
+            status: status
           };
         });
         return true;
@@ -1669,25 +1677,35 @@ async function fetchIncidentsFromDB() {
 
 // Map KAM names from form to dashboard assignee IDs
 function mapKamToAssignee(kamName) {
+  if (!kamName) return 'siam';
+
   const mapping = {
     'Md. Saidul Islam Siam': 'siam',
     'Parves Mosharof': 'parves',
     'Fuad Hasan': 'fuad',
     'Md. Al Abid': 'abid',
-    'Juman Nakrak': 'juman'
+    'Juman Nakrak': 'juman',
+    'Mehedi Hasan Asif': 'mehedi'
   };
 
   // Try exact match first
   if (mapping[kamName]) return mapping[kamName];
 
-  // Try partial match
+  // Try case-insensitive exact match
+  const lowerKam = kamName.toLowerCase();
   for (const [name, id] of Object.entries(mapping)) {
-    if (kamName && (kamName.includes(name.split(' ')[0]) || kamName.includes(name.split(' ').pop()))) {
-      return id;
+    if (lowerKam === name.toLowerCase()) return id;
+  }
+
+  // Try partial match (first name or last name)
+  for (const [name, id] of Object.entries(mapping)) {
+    const parts = name.toLowerCase().split(' ');
+    for (const part of parts) {
+      if (part.length > 2 && lowerKam.includes(part)) return id;
     }
   }
 
-  return 'mehedi'; // default
+  return 'siam'; // default to siam
 }
 
 // Refresh button handler
