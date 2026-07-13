@@ -272,6 +272,11 @@
   }
 
   .badge-open {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+  }
+
+  .badge-in-progress {
     background: rgba(255, 200, 0, 0.15);
     color: var(--accent);
   }
@@ -288,7 +293,8 @@
     display: inline-block;
   }
 
-  .badge-open .badge-dot { background: var(--accent); }
+  .badge-open .badge-dot { background: var(--danger); }
+  .badge-in-progress .badge-dot { background: var(--accent); }
   .badge-solved .badge-dot { background: var(--success); }
 
   .assignee-select {
@@ -801,6 +807,173 @@
     font-weight: 500;
   }
 
+  /* Tabs */
+  .tabs-nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    width: fit-content;
+  }
+
+  .tab-btn {
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 200, 0, 0.05);
+  }
+
+  .tab-btn.active {
+    background: var(--accent);
+    color: #1a1a2e;
+    font-weight: 600;
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  /* Analytics Styles */
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .analytics-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .analytics-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .person-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .person-row:last-child {
+    border-bottom: none;
+  }
+
+  .person-detail {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .person-stats-detail {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .stat-detail-item {
+    text-align: center;
+  }
+
+  .stat-detail-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-detail-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .response-time {
+    color: var(--success);
+    font-family: 'SF Mono', monospace;
+    font-size: 13px;
+  }
+
+  .response-time.slow {
+    color: var(--danger);
+  }
+
+  .response-time.medium {
+    color: var(--warning);
+  }
+
+  /* Chart bar */
+  .chart-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .chart-bar-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    width: 80px;
+    text-align: right;
+  }
+
+  .chart-bar-track {
+    flex: 1;
+    height: 24px;
+    background: var(--bg-primary);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .chart-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--accent), #ff8c00);
+    transition: width 0.6s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+  }
+
+  .chart-bar-value {
+    font-size: 11px;
+    font-weight: 600;
+    color: #1a1a2e;
+  }
+
   /* Auth Styles */
   .auth-overlay {
     position: fixed;
@@ -1001,6 +1174,18 @@
     </div>
   </div>
 
+  <div class="tabs-nav">
+    <button class="tab-btn active" onclick="switchTab('dashboard')" id="tab-dashboard">
+      <span>&#128200;</span> Dashboard
+    </button>
+    <button class="tab-btn" onclick="switchTab('analytics')" id="tab-analytics">
+      <span>&#128202;</span> Analytics
+    </button>
+  </div>
+
+  <!-- DASHBOARD TAB -->
+  <div class="tab-content active" id="tab-content-dashboard">
+
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-label">Total Incidents</div>
@@ -1034,6 +1219,7 @@
       <select class="filter-select" id="statusFilter" onchange="filterIncidents()">
         <option value="all">All Status</option>
         <option value="open">Open</option>
+        <option value="in-progress">In Progress</option>
         <option value="solved">Solved</option>
       </select>
       <select class="filter-select" id="assigneeFilter" onchange="filterIncidents()">
@@ -1066,6 +1252,25 @@
     </table>
     <div class="pagination" id="pagination"></div>
   </div>
+  </div>
+  <!-- END DASHBOARD TAB -->
+
+  <!-- ANALYTICS TAB -->
+  <div class="tab-content" id="tab-content-analytics">
+    <div class="section-title" style="color: var(--accent);">
+      <span style="margin-right: 8px;">&#9670;</span> Individual Performance Analytics
+    </div>
+    <div class="analytics-grid" id="analyticsGrid"></div>
+
+    <div class="section-title" style="color: var(--accent); margin-top: 32px;">
+      <span style="margin-right: 8px;">&#9670;</span> Response Time Leaderboard
+    </div>
+    <div class="incidents-table-container">
+      <div id="responseTimeChart"></div>
+    </div>
+  </div>
+  <!-- END ANALYTICS TAB -->
+
 </div>
 
 <!-- Add Incident Modal -->
@@ -1115,15 +1320,15 @@ let incidents = [
   { id: 1, subject: 'URGENT: Suspicious login from IP 192.168.1.45', assignee: 'siam', created: '2026-07-10T09:30:00', solved: '2026-07-10T14:20:00', status: 'solved' },
   { id: 2, subject: 'Phishing attempt detected in finance@company.com', assignee: 'fuad', created: '2026-07-11T08:15:00', solved: null, status: 'open' },
   { id: 3, subject: 'Malware alert: Trojan.Win32.Generic detected', assignee: 'mehedi', created: '2026-07-11T11:45:00', solved: '2026-07-11T16:30:00', status: 'solved' },
-  { id: 4, subject: 'DDoS attack on API gateway - 50k req/s', assignee: 'abid', created: '2026-07-12T02:00:00', solved: null, status: 'open' },
+  { id: 4, subject: 'DDoS attack on API gateway - 50k req/s', assignee: 'abid', created: '2026-07-12T02:00:00', solved: null, status: 'in-progress' },
   { id: 5, subject: 'Data exfiltration attempt via DNS tunneling', assignee: 'juman', created: '2026-07-12T14:20:00', solved: '2026-07-13T09:10:00', status: 'solved' },
-  { id: 6, subject: 'Ransomware indicators on workstation WS-4421', assignee: 'parves', created: '2026-07-13T07:00:00', solved: null, status: 'open' },
+  { id: 6, subject: 'Ransomware indicators on workstation WS-4421', assignee: 'parves', created: '2026-07-13T07:00:00', solved: null, status: 'in-progress' },
   { id: 7, subject: 'Unauthorized AWS S3 bucket policy change', assignee: 'fuad', created: '2026-07-13T10:30:00', solved: null, status: 'open' },
   { id: 8, subject: 'CVE-2026-1234 exploit attempt on web server', assignee: 'abid', created: '2026-07-13T13:15:00', solved: '2026-07-13T15:45:00', status: 'solved' },
-  { id: 9, subject: 'Insider threat: unusual file access pattern', assignee: 'juman', created: '2026-07-13T16:00:00', solved: null, status: 'open' },
+  { id: 9, subject: 'Insider threat: unusual file access pattern', assignee: 'juman', created: '2026-07-13T16:00:00', solved: null, status: 'in-progress' },
   { id: 10, subject: 'SSL certificate expiry warning - prod.api.com', assignee: 'fuad', created: '2026-07-13T18:30:00', solved: null, status: 'open' },
   { id: 11, subject: 'Brute force attack on VPN portal', assignee: 'siam', created: '2026-07-13T20:00:00', solved: '2026-07-13T22:15:00', status: 'solved' },
-  { id: 12, subject: 'SIEM alert: Privilege escalation on DC01', assignee: 'mehedi', created: '2026-07-13T21:45:00', solved: null, status: 'open' }
+  { id: 12, subject: 'SIEM alert: Privilege escalation on DC01', assignee: 'mehedi', created: '2026-07-13T21:45:00', solved: null, status: 'in-progress' }
 ];
 
 function isCurrentUserAdmin() {
@@ -1140,6 +1345,19 @@ let selectedIds = new Set();
 let currentSort = { field: 'created', dir: 'desc' };
 let currentPage = 1;
 const perPage = 8;
+
+// ===================== TABS =====================
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+  document.getElementById('tab-' + tabName).classList.add('active');
+  document.getElementById('tab-content-' + tabName).classList.add('active');
+
+  if (tabName === 'analytics') {
+    renderAnalytics();
+  }
+}
 
 // ===================== THEME TOGGLE =====================
 function toggleTheme() {
@@ -1378,14 +1596,21 @@ function renderTable() {
           <td class="date-cell">${created}</td>
           <td class="date-cell ${inc.solved ? 'solved' : ''}">${solved}</td>
           <td>
-            <span class="badge badge-${inc.status}">
-              <span class="badge-dot"></span>
-              ${inc.status.toUpperCase()}
-            </span>
+            ${isCurrentUserAdmin() 
+              ? `<select class="assignee-select" style="min-width: 120px;" onchange="updateStatus(${inc.id}, this.value)">
+                  <option value="open" ${inc.status === 'open' ? 'selected' : ''}>Open</option>
+                  <option value="in-progress" ${inc.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                  <option value="solved" ${inc.status === 'solved' ? 'selected' : ''}>Solved</option>
+                </select>`
+              : `<span class="badge badge-${inc.status}">
+                  <span class="badge-dot"></span>
+                  ${inc.status.replace('-', ' ').toUpperCase()}
+                </span>`
+            }
           </td>
           <td>
             <div class="action-btns">
-              ${inc.status === 'open' ? `<button class="btn-icon solve" onclick="solveIncident(${inc.id})" title="Mark Solved">&#10003;</button>` : ''}
+              ${(inc.status === 'open' || inc.status === 'in-progress') ? `<button class="btn-icon solve" onclick="solveIncident(${inc.id})" title="${inc.status === 'open' ? 'Mark In Progress' : 'Mark Solved'}">${inc.status === 'open' ? '&#9654;' : '&#10003;'}</button>` : ''}
               ${isCurrentUserAdmin() ? `<button class="btn-icon delete" onclick="deleteIncident(${inc.id})" title="Delete (Admin Only)">&#128465;</button>` : ''}
             </div>
           </td>
@@ -1437,12 +1662,17 @@ function updateStats() {
 function solveIncident(id) {
   const inc = incidents.find(i => i.id === id);
   if (inc) {
-    inc.status = 'solved';
-    inc.solved = new Date().toISOString();
+    if (inc.status === 'open') {
+      inc.status = 'in-progress';
+      showToast('info', 'In Progress', `"${inc.subject.substring(0, 40)}..." marked as in progress.`);
+    } else if (inc.status === 'in-progress') {
+      inc.status = 'solved';
+      inc.solved = new Date().toISOString();
+      showToast('success', 'Incident Solved', `"${inc.subject.substring(0, 40)}..." marked as solved.`);
+    }
     renderTable();
     renderTeamStats();
     updateStats();
-    showToast('success', 'Incident Solved', `"${inc.subject.substring(0, 40)}..." marked as solved.`);
   }
 }
 
@@ -1458,6 +1688,27 @@ function deleteIncident(id) {
     renderTeamStats();
     updateStats();
     showToast('info', 'Deleted', 'Incident removed from the system.');
+  }
+}
+
+function updateStatus(id, newStatus) {
+  if (!isCurrentUserAdmin()) {
+    showToast('info', 'Access Denied', 'Only admins can change status.');
+    renderTable();
+    return;
+  }
+  const inc = incidents.find(i => i.id === id);
+  if (inc) {
+    inc.status = newStatus;
+    if (newStatus === 'solved' && !inc.solved) {
+      inc.solved = new Date().toISOString();
+    } else if (newStatus !== 'solved') {
+      inc.solved = null;
+    }
+    renderTable();
+    renderTeamStats();
+    updateStats();
+    showToast('success', 'Status Updated', `Incident marked as ${newStatus.replace('-', ' ')}`);
   }
 }
 
@@ -1535,7 +1786,7 @@ function bulkSolve() {
   let count = 0;
   selectedIds.forEach(id => {
     const inc = incidents.find(i => i.id === id);
-    if (inc && inc.status === 'open') {
+    if (inc && (inc.status === 'open' || inc.status === 'in-progress')) {
       inc.status = 'solved';
       inc.solved = new Date().toISOString();
       count++;
@@ -1626,6 +1877,146 @@ function exportCSV() {
   a.click();
   URL.revokeObjectURL(url);
   showToast('success', 'Exported', `${filtered.length} incidents exported to CSV.`);
+}
+
+// ===================== ANALYTICS =====================
+function renderAnalytics() {
+  const container = document.getElementById('analyticsGrid');
+  const chartContainer = document.getElementById('responseTimeChart');
+
+  // Calculate per-person stats
+  const personStats = {};
+  teamMembers.forEach(m => {
+    personStats[m.id] = {
+      name: m.name,
+      role: m.role,
+      initials: m.initials,
+      total: 0,
+      open: 0,
+      inProgress: 0,
+      solved: 0,
+      totalResponseTime: 0, // in hours
+      solvedCount: 0,
+      avgResponseTime: 0
+    };
+  });
+
+  incidents.forEach(inc => {
+    if (personStats[inc.assignee]) {
+      const s = personStats[inc.assignee];
+      s.total++;
+      if (inc.status === 'open') s.open++;
+      else if (inc.status === 'in-progress') s.inProgress++;
+      else if (inc.status === 'solved') {
+        s.solved++;
+        if (inc.solved && inc.created) {
+          const hours = (new Date(inc.solved) - new Date(inc.created)) / (1000 * 60 * 60);
+          s.totalResponseTime += hours;
+          s.solvedCount++;
+        }
+      }
+    }
+  });
+
+  // Calculate averages
+  Object.values(personStats).forEach(s => {
+    s.avgResponseTime = s.solvedCount > 0 ? Math.round(s.totalResponseTime / s.solvedCount * 10) / 10 : 0;
+  });
+
+  // Sort by solved count (descending)
+  const sortedStats = Object.values(personStats).sort((a, b) => b.solved - a.solved);
+
+  // Render individual cards
+  container.innerHTML = sortedStats.map(s => {
+    const ratio = s.total > 0 ? Math.round((s.solved / s.total) * 100) : 0;
+    const responseClass = s.avgResponseTime > 24 ? 'slow' : s.avgResponseTime > 8 ? 'medium' : '';
+
+    return `
+      <div class="analytics-card">
+        <div class="analytics-card-title">
+          <div class="avatar" style="width: 32px; height: 32px; font-size: 12px;">${s.initials}</div>
+          ${s.name}
+        </div>
+        <div class="person-row">
+          <div class="person-detail">
+            <span style="color: var(--text-secondary); font-size: 13px;">Total Assigned</span>
+          </div>
+          <div class="stat-detail-value">${s.total}</div>
+        </div>
+        <div class="person-row">
+          <div class="person-detail">
+            <span style="color: var(--danger); font-size: 13px;">&#9679; Open</span>
+          </div>
+          <div class="stat-detail-value" style="color: var(--danger);">${s.open}</div>
+        </div>
+        <div class="person-row">
+          <div class="person-detail">
+            <span style="color: var(--accent); font-size: 13px;">&#9679; In Progress</span>
+          </div>
+          <div class="stat-detail-value" style="color: var(--accent);">${s.inProgress}</div>
+        </div>
+        <div class="person-row">
+          <div class="person-detail">
+            <span style="color: var(--success); font-size: 13px;">&#9679; Solved</span>
+          </div>
+          <div class="stat-detail-value" style="color: var(--success);">${s.solved}</div>
+        </div>
+        <div class="person-row">
+          <div class="person-detail">
+            <span style="color: var(--text-secondary); font-size: 13px;">Resolution Rate</span>
+          </div>
+          <div class="stat-detail-value">${ratio}%</div>
+        </div>
+        <div class="person-row" style="border-bottom: none;">
+          <div class="person-detail">
+            <span style="color: var(--text-secondary); font-size: 13px;">Avg Response Time</span>
+          </div>
+          <div class="response-time ${responseClass}">${s.avgResponseTime > 0 ? s.avgResponseTime + 'h' : 'N/A'}</div>
+        </div>
+        <div class="ratio-bar" style="margin-top: 12px;">
+          <div class="ratio-fill" style="width: ${ratio}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Render response time chart
+  const maxTime = Math.max(...sortedStats.map(s => s.avgResponseTime), 1);
+  chartContainer.innerHTML = `
+    <table style="width: 100%;">
+      <thead>
+        <tr>
+          <th style="width: 40px;"></th>
+          <th>Team Member</th>
+          <th style="width: 120px;">Avg Response</th>
+          <th style="width: 60%;">Visual</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${sortedStats.map(s => {
+          const pct = s.avgResponseTime > 0 ? (s.avgResponseTime / maxTime * 100) : 0;
+          const responseClass = s.avgResponseTime > 24 ? 'slow' : s.avgResponseTime > 8 ? 'medium' : '';
+          return `
+            <tr>
+              <td><div class="avatar" style="width: 28px; height: 28px; font-size: 10px;">${s.initials}</div></td>
+              <td>
+                <div style="font-weight: 500; color: var(--text-primary);">${s.name}</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">${s.role}</div>
+              </td>
+              <td class="response-time ${responseClass}">${s.avgResponseTime > 0 ? s.avgResponseTime + 'h' : 'N/A'}</td>
+              <td>
+                <div class="chart-bar-track" style="height: 20px;">
+                  <div class="chart-bar-fill" style="width: ${Math.max(pct, 5)}%;">
+                    ${pct > 15 ? `<span class="chart-bar-value">${s.avgResponseTime}h</span>` : ''}
+                  </div>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
 }
 
 // ===================== START =====================
