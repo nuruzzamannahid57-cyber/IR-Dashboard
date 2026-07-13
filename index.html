@@ -1127,6 +1127,32 @@
     z-index: 5;
   }
 
+  /* Cloud base/body to connect the circles */
+  .cloud-base {
+    width: 120px;
+    height: 40px;
+    background-color: #4c9beb;
+    border-radius: 20px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 4;
+  }
+
+  .front .cloud-base {
+    width: 100px;
+    height: 35px;
+    bottom: -5px;
+    left: 10px;
+  }
+
+  .back .cloud-base {
+    width: 80px;
+    height: 30px;
+    bottom: -5px;
+    left: 5px;
+  }
+
   .sun {
     width: 120px;
     height: 120px;
@@ -1313,10 +1339,12 @@
         <span class="back">
           <span class="left-back"></span>
           <span class="right-back"></span>
+          <span class="cloud-base"></span>
         </span>
         <span class="front">
           <span class="left-front"></span>
           <span class="right-front"></span>
+          <span class="cloud-base"></span>
         </span>
       </div>
     </div>
