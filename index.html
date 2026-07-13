@@ -1648,6 +1648,7 @@ const TURSO_AUTH_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpY
 
 async function fetchIncidentsFromDB() {
   try {
+    // Use Turso HTTP API with CORS support
     const response = await fetch(`${TURSO_DB_URL}/v2/pipeline`, {
       method: 'POST',
       headers: {
@@ -1662,49 +1663,62 @@ async function fetchIncidentsFromDB() {
     });
 
     if (!response.ok) {
-      console.error('Turso API error:', response.status, await response.text());
+      const errText = await response.text();
+      console.error('Turso API error:', response.status, errText);
       return false;
     }
 
     const data = await response.json();
-    console.log('Turso response:', data);
+    console.log('Turso raw response:', JSON.stringify(data, null, 2));
 
-    if (data.results && data.results[0] && data.results[0].response && data.results[0].response.result && data.results[0].response.result.rows) {
-      const rows = data.results[0].response.result.rows;
+    // Turso HTTP API response format
+    let rows = [];
 
-      if (rows.length > 0) {
-        incidents = rows.map((row, idx) => {
-          // Turso returns rows as arrays of values with types
-          const getValue = (colIdx) => {
-            if (row === undefined || row[colIdx] === undefined || row[colIdx] === null) return null;
-            // Turso v2 pipeline returns {type: '...', value: '...'} or just the value
-            if (typeof row[colIdx] === 'object' && row[colIdx] !== null && 'value' in row[colIdx]) {
-              return row[colIdx].value;
-            }
-            return row[colIdx];
-          };
-
-          const solvedAt = getValue(4);
-          const assigneeName = getValue(2) || 'Unknown';
-
-          // Derive status from solved_at (handle null, empty string, undefined)
-          let status = 'open';
-          if (solvedAt && solvedAt !== '' && solvedAt !== 'null') status = 'solved';
-
-          return {
-            id: getValue(0) || idx + 1,
-            subject: getValue(1) || 'No Subject',
-            kamName: assigneeName,  // assignee from KAM form = KAM name
-            assignee: mapKamToAssignee(assigneeName),  // map to IR team member
-            created: getValue(3) || new Date().toISOString(),
-            solved: solvedAt,
-            status: status
-          };
-        });
-        return true;
+    if (data.results && Array.isArray(data.results)) {
+      // Find the execute result
+      const executeResult = data.results.find(r => r.type === 'ok' && r.response?.type === 'execute');
+      if (executeResult && executeResult.response.result?.rows) {
+        rows = executeResult.response.result.rows;
       }
     }
-    return false;
+
+    if (rows.length === 0) {
+      console.log('No rows returned from Turso');
+      return false;
+    }
+
+    console.log('Turso rows count:', rows.length);
+
+    incidents = rows.map((row, idx) => {
+      // Turso returns rows as arrays of {type, value} objects
+      const getValue = (colIdx) => {
+        if (!row || !Array.isArray(row) || colIdx >= row.length) return null;
+        const cell = row[colIdx];
+        if (cell === null || cell === undefined) return null;
+        if (typeof cell === 'object' && 'value' in cell) return cell.value;
+        return cell;
+      };
+
+      const solvedAt = getValue(4);
+      const assigneeName = getValue(2) || 'Unknown';
+
+      // Derive status from solved_at
+      let status = 'open';
+      if (solvedAt && solvedAt !== '' && solvedAt !== 'null') status = 'solved';
+
+      return {
+        id: getValue(0) || idx + 1,
+        subject: getValue(1) || 'No Subject',
+        kamName: assigneeName,
+        assignee: mapKamToAssignee(assigneeName),
+        created: getValue(3) || new Date().toISOString(),
+        solved: solvedAt,
+        status: status
+      };
+    });
+
+    console.log('Loaded', incidents.length, 'incidents from Turso');
+    return true;
   } catch (err) {
     console.error('Fetch failed:', err);
     return false;
