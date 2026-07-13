@@ -1648,7 +1648,6 @@ const TURSO_AUTH_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpY
 
 async function fetchIncidentsFromDB() {
   try {
-    // Use Turso HTTP API with CORS support
     const response = await fetch(`${TURSO_DB_URL}/v2/pipeline`, {
       method: 'POST',
       headers: {
@@ -1669,55 +1668,75 @@ async function fetchIncidentsFromDB() {
     }
 
     const data = await response.json();
-    console.log('Turso raw response:', JSON.stringify(data, null, 2));
 
-    // Turso HTTP API response format
+    // Extract rows from Turso response
     let rows = [];
-
-    if (data.results && Array.isArray(data.results)) {
-      // Find the execute result
-      const executeResult = data.results.find(r => r.type === 'ok' && r.response?.type === 'execute');
-      if (executeResult && executeResult.response.result?.rows) {
-        rows = executeResult.response.result.rows;
+    if (data.results && Array.isArray(data.results) && data.results.length > 0) {
+      const firstResult = data.results[0];
+      if (firstResult.type === 'ok' && firstResult.response && 
+          firstResult.response.type === 'execute' && firstResult.response.result) {
+        rows = firstResult.response.result.rows || [];
       }
     }
 
     if (rows.length === 0) {
-      console.log('No rows returned from Turso');
+      console.log('No rows from Turso');
       return false;
     }
 
-    console.log('Turso rows count:', rows.length);
+    console.log('Turso returned', rows.length, 'rows');
+    console.log('First row raw:', rows[0]);
 
-    incidents = rows.map((row, idx) => {
-      // Turso returns rows as arrays of {type, value} objects
+    // Parse Turso rows - each cell is {type, value}
+    const parsed = rows.map((row, idx) => {
       const getValue = (colIdx) => {
         if (!row || !Array.isArray(row) || colIdx >= row.length) return null;
         const cell = row[colIdx];
         if (cell === null || cell === undefined) return null;
-        if (typeof cell === 'object' && 'value' in cell) return cell.value;
+        if (typeof cell === 'object' && cell !== null && 'value' in cell) {
+          return cell.value;
+        }
         return cell;
       };
 
-      const solvedAt = getValue(4);
-      const assigneeName = getValue(2) || 'Unknown';
+      return {
+        id: getValue(0),
+        subject: getValue(1),
+        kamName: getValue(2),
+        created: getValue(3),
+        solved: getValue(4)
+      };
+    });
 
-      // Derive status from solved_at
+    console.log('Parsed first row:', parsed[0]);
+
+    // Check if we got actual data or empty rows
+    const hasRealData = parsed.some(p => p.subject && p.subject !== '');
+    if (!hasRealData) {
+      console.log('Turso rows exist but subject is empty - check column order');
+      // Try with column names instead of indices
+      return false;
+    }
+
+    // Build incidents from real data
+    incidents = parsed.map((p, idx) => {
+      const solvedAt = p.solved;
       let status = 'open';
       if (solvedAt && solvedAt !== '' && solvedAt !== 'null') status = 'solved';
 
       return {
-        id: getValue(0) || idx + 1,
-        subject: getValue(1) || 'No Subject',
-        kamName: assigneeName,
-        assignee: mapKamToAssignee(assigneeName),
-        created: getValue(3) || new Date().toISOString(),
+        id: p.id || idx + 1,
+        subject: p.subject || 'No Subject',
+        kamName: p.kamName || 'Unknown',
+        assignee: mapKamToAssignee(p.kamName),
+        created: p.created || new Date().toISOString(),
         solved: solvedAt,
         status: status
       };
     });
 
-    console.log('Loaded', incidents.length, 'incidents from Turso');
+    console.log('Loaded', incidents.length, 'REAL incidents from Turso');
+    console.log('First incident:', incidents[0]);
     return true;
   } catch (err) {
     console.error('Fetch failed:', err);
