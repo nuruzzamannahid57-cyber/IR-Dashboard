@@ -1618,18 +1618,19 @@ let teamMembers = [
 ];
 
 let incidents = [
-  { id: 1, subject: 'URGENT: Suspicious login from IP 192.168.1.45', assignee: 'mehedi', kamName: 'Nuruzzaman Nahid', created: '2026-07-10T09:30:00', solved: '2026-07-10T14:20:00', status: 'solved' },
-  { id: 2, subject: 'Phishing attempt detected in finance@company.com', assignee: 'fuad', kamName: 'Nuruzzaman Nahid', created: '2026-07-11T08:15:00', solved: null, status: 'open' },
-  { id: 3, subject: 'Malware alert: Trojan.Win32.Generic detected', assignee: 'mehedi', kamName: 'Nuruzzaman Nahid', created: '2026-07-11T11:45:00', solved: '2026-07-11T16:30:00', status: 'solved' },
-  { id: 4, subject: 'DDoS attack on API gateway - 50k req/s', assignee: 'abid', kamName: 'Nuruzzaman Nahid', created: '2026-07-12T02:00:00', solved: null, status: 'in-progress' },
-  { id: 5, subject: 'Data exfiltration attempt via DNS tunneling', assignee: 'juman', kamName: 'Nuruzzaman Nahid', created: '2026-07-12T14:20:00', solved: '2026-07-13T09:10:00', status: 'solved' },
-  { id: 6, subject: 'Ransomware indicators on workstation WS-4421', assignee: 'parves', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T07:00:00', solved: null, status: 'in-progress' },
-  { id: 7, subject: 'Unauthorized AWS S3 bucket policy change', assignee: 'fuad', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T10:30:00', solved: null, status: 'open' },
-  { id: 8, subject: 'CVE-2026-1234 exploit attempt on web server', assignee: 'abid', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T13:15:00', solved: '2026-07-13T15:45:00', status: 'solved' },
-  { id: 9, subject: 'Insider threat: unusual file access pattern', assignee: 'juman', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T16:00:00', solved: null, status: 'in-progress' },
-  { id: 10, subject: 'SSL certificate expiry warning - prod.api.com', assignee: 'fuad', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T18:30:00', solved: null, status: 'open' },
-  { id: 11, subject: 'Brute force attack on VPN portal', assignee: 'siam', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T20:00:00', solved: '2026-07-13T22:15:00', status: 'solved' },
-  { id: 12, subject: 'SIEM alert: Privilege escalation on DC01', assignee: 'mehedi', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T21:45:00', solved: null, status: 'in-progress' }
+  // DEMO DATA - Will be replaced when Turso has real data
+  { id: 1, subject: '[DEMO] Suspicious login from IP 192.168.1.45', assignee: 'mehedi', kamName: 'Nuruzzaman Nahid', created: '2026-07-10T09:30:00', solved: '2026-07-10T14:20:00', status: 'solved' },
+  { id: 2, subject: '[DEMO] Phishing attempt detected in finance@company.com', assignee: 'fuad', kamName: 'Nuruzzaman Nahid', created: '2026-07-11T08:15:00', solved: null, status: 'open' },
+  { id: 3, subject: '[DEMO] Malware alert: Trojan.Win32.Generic detected', assignee: 'mehedi', kamName: 'Nuruzzaman Nahid', created: '2026-07-11T11:45:00', solved: '2026-07-11T16:30:00', status: 'solved' },
+  { id: 4, subject: '[DEMO] DDoS attack on API gateway - 50k req/s', assignee: 'abid', kamName: 'Nuruzzaman Nahid', created: '2026-07-12T02:00:00', solved: null, status: 'in-progress' },
+  { id: 5, subject: '[DEMO] Data exfiltration attempt via DNS tunneling', assignee: 'juman', kamName: 'Nuruzzaman Nahid', created: '2026-07-12T14:20:00', solved: '2026-07-13T09:10:00', status: 'solved' },
+  { id: 6, subject: '[DEMO] Ransomware indicators on workstation WS-4421', assignee: 'parves', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T07:00:00', solved: null, status: 'in-progress' },
+  { id: 7, subject: '[DEMO] Unauthorized AWS S3 bucket policy change', assignee: 'fuad', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T10:30:00', solved: null, status: 'open' },
+  { id: 8, subject: '[DEMO] CVE-2026-1234 exploit attempt on web server', assignee: 'abid', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T13:15:00', solved: '2026-07-13T15:45:00', status: 'solved' },
+  { id: 9, subject: '[DEMO] Insider threat: unusual file access pattern', assignee: 'juman', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T16:00:00', solved: null, status: 'in-progress' },
+  { id: 10, subject: '[DEMO] SSL certificate expiry warning - prod.api.com', assignee: 'fuad', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T18:30:00', solved: null, status: 'open' },
+  { id: 11, subject: '[DEMO] Brute force attack on VPN portal', assignee: 'siam', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T20:00:00', solved: '2026-07-13T22:15:00', status: 'solved' },
+  { id: 12, subject: '[DEMO] SIEM alert: Privilege escalation on DC01', assignee: 'mehedi', kamName: 'Nuruzzaman Nahid', created: '2026-07-13T21:45:00', solved: null, status: 'in-progress' }
 ];
 
 function isCurrentUserAdmin() {
@@ -1680,7 +1681,8 @@ async function fetchIncidentsFromDB() {
     }
 
     if (rows.length === 0) {
-      console.log('No rows from Turso');
+      console.log('%c[TURSO] Table `IR Issues` is EMPTY - no rows found', 'color: orange; font-weight: bold;');
+      console.log('Your KAM form data is going to a different table/database.');
       return false;
     }
 
@@ -1688,6 +1690,7 @@ async function fetchIncidentsFromDB() {
     console.log('First row raw:', rows[0]);
 
     // Parse Turso rows - each cell is {type, value}
+    // Columns: id(0), subject_line(1), Kam_Name(2), assignee(3), created_at(4), solved_at(5)
     const parsed = rows.map((row, idx) => {
       const getValue = (colIdx) => {
         if (!row || !Array.isArray(row) || colIdx >= row.length) return null;
@@ -1702,9 +1705,10 @@ async function fetchIncidentsFromDB() {
       return {
         id: getValue(0),
         subject: getValue(1),
-        kamName: getValue(2),
-        created: getValue(3),
-        solved: getValue(4)
+        kamName: getValue(2),      // Kam_Name from KAM form
+        assignee: getValue(3),      // IR team assignee (may be NULL)
+        created: getValue(4),
+        solved: getValue(5)
       };
     });
 
@@ -1724,11 +1728,15 @@ async function fetchIncidentsFromDB() {
       let status = 'open';
       if (solvedAt && solvedAt !== '' && solvedAt !== 'null') status = 'solved';
 
+      // Use Kam_Name for KAM display, assignee for IR team mapping
+      const kamName = p.kamName || 'Unknown';
+      const irAssignee = p.assignee || kamName; // fallback to KAM name if assignee is NULL
+
       return {
         id: p.id || idx + 1,
         subject: p.subject || 'No Subject',
-        kamName: p.kamName || 'Unknown',
-        assignee: mapKamToAssignee(p.kamName),
+        kamName: kamName,
+        assignee: mapKamToAssignee(irAssignee),
         created: p.created || new Date().toISOString(),
         solved: solvedAt,
         status: status
