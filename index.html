@@ -1696,8 +1696,12 @@ async function fetchIncidentsFromDB() {
         if (!row || !Array.isArray(row) || colIdx >= row.length) return null;
         const cell = row[colIdx];
         if (cell === null || cell === undefined) return null;
-        if (typeof cell === 'object' && cell !== null && 'value' in cell) {
-          return cell.value;
+        // Turso returns cells as {type: '...', value: '...'}
+        if (typeof cell === 'object' && cell !== null) {
+          if ('value' in cell) return cell.value;
+          if ('Value' in cell) return cell.Value;
+          // If it's an object with no value, stringify it
+          return JSON.stringify(cell);
         }
         return cell;
       };
@@ -1726,19 +1730,30 @@ async function fetchIncidentsFromDB() {
     incidents = parsed.map((p, idx) => {
       const solvedAt = p.solved;
       let status = 'open';
-      if (solvedAt && solvedAt !== '' && solvedAt !== 'null') status = 'solved';
+      if (solvedAt && solvedAt !== '' && solvedAt !== 'null' && solvedAt !== null) status = 'solved';
 
       // Use Kam_Name for KAM display, assignee for IR team mapping
       const kamName = p.kamName || 'Unknown';
-      const irAssignee = p.assignee || kamName; // fallback to KAM name if assignee is NULL
+      const irAssignee = p.assignee || kamName;
+
+      // Fix date format - Turso returns "2026-07-14 05:1..." which needs T separator for ISO
+      let createdDate = p.created;
+      let solvedDate = solvedAt;
+
+      if (createdDate && typeof createdDate === 'string' && createdDate.includes(' ') && !createdDate.includes('T')) {
+        createdDate = createdDate.replace(' ', 'T');
+      }
+      if (solvedDate && typeof solvedDate === 'string' && solvedDate.includes(' ') && !solvedDate.includes('T')) {
+        solvedDate = solvedDate.replace(' ', 'T');
+      }
 
       return {
         id: p.id || idx + 1,
         subject: p.subject || 'No Subject',
         kamName: kamName,
         assignee: mapKamToAssignee(irAssignee),
-        created: p.created || new Date().toISOString(),
-        solved: solvedAt,
+        created: createdDate || new Date().toISOString(),
+        solved: solvedDate,
         status: status
       };
     });
