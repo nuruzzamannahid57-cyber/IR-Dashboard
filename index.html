@@ -1747,10 +1747,20 @@
         irMailData = rows.map(row => {
           const obj = {};
           cols.forEach((col, i) => {
+            // Normalize column name: trim whitespace and lowercase.
+            // This fixes two real schema issues seen in this table:
+            //  1) The KAM column is actually named "Kam_Name" (mixed case) in
+            //     the DB, but the app reads item.kam_name — case-sensitive JS
+            //     property access was silently returning undefined for it.
+            //  2) There are legacy duplicate columns "assignee " and " solved_at"
+            //     (stray leading/trailing space) left over from an old migration.
+            //     Since the clean "assignee"/"solved_at" columns come later in
+            //     column order, normalizing lets the correct value win.
+            const key = col.trim().toLowerCase();
             if (row[i]) {
-              obj[col] = row[i].type === 'null' ? null : row[i].value;
+              obj[key] = row[i].type === 'null' ? null : row[i].value;
             } else {
-              obj[col] = null;
+              obj[key] = null;
             }
           });
           // Normalize status for display
