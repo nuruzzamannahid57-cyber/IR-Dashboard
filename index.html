@@ -1964,6 +1964,8 @@
         }
 
         if (data.results && data.results[0] && data.results[0].type === 'ok') {
+          const insertResult = data.results[0].response && data.results[0].response.result;
+          const refId = (insertResult && (insertResult.last_insert_rowid || insertResult.lastInsertRowid)) || 'N/A';
           msg.classList.remove('hidden');
           msg.className = 'mt-4 p-3 rounded-lg text-sm bg-emerald-50 text-emerald-700 border border-emerald-200';
           msg.innerHTML = '<i class="fas fa-check-circle mr-1.5"></i> <strong>Success!</strong> Saved to IR-issue DB. Ref: <code class="font-mono bg-emerald-100 px-1 rounded">' + refId + '</code>';
